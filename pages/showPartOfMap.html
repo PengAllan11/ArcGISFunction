@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/FeatureLayer",
+            "esri/Color",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map, ArcGISDynamicMapServiceLayer,ArcGISTiledMapServiceLayer,FeatureLayer,Color) {
+            var map = new Map("mapDiv", {
+                //basemap:"topo",
+                center: [121, 35],
+                zoom: 4,
+                minZoom: 4,
+                maxZoom: 9,
+                logo: false
+            });
+            var dyMap = new ArcGISTiledMapServiceLayer("http://10.60.38.158:6080/arcgis/rest/services/ChinaProvinceTile/MapServer");
+            dyMap.hide();
+            var featureLayer = new FeatureLayer("http://10.60.38.158:6080/arcgis/rest/services/ChinaProvince/MapServer/1",{
+                outFields: ["*"]
+            });
+            featureLayer.setShowLabels(true);
+            map.addLayer(dyMap);
+            map.addLayer(featureLayer);
+            //featureLayer.setDefinitionExpression("NAME = '湖北'");
+            //featureLayer.clear();
+            //featureLayer.setDefinitionExpression("NAME = '上海'");
+
+            //笔者server上的图层
+        });
+    </script>
+</head>
+<body>
+<div id="mapDiv"></div>
+</body>
+</html>

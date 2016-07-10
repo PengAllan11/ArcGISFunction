@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Multipoint</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.15/"></script>
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/on",
+            "esri/map",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/tasks/QueryTask",
+            "esri/tasks/query",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/InfoTemplate",
+            "esri/geometry/Multipoint",
+            "esri/SpatialReference",
+            "esri/geometry/Point",
+            "esri/Color",
+            "esri/graphic",
+            "dojo/domReady!"
+        ], function(dom, on, Map, ArcGISTiledMapServiceLayer,GraphicsLayer, QueryTask, Query, SimpleMarkerSymbol, InfoTemplate, Multipoint,
+                    SpatialReference,Point,Color, Graphic) {
+            //create map and add layer
+            map = new Map("map", {
+                //basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+            var baseMap = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
+            map.addLayer(baseMap);
+
+            //create multipoint method1
+            var mp = new Multipoint(new SpatialReference({wkid:4326}));
+            mp.points = [[120.63,25.51], [120.56,25.51], [120.56,25.55], [120.58,25.57], [120.52,25.59],
+                [120.54,25.45], [120.57,25.62]];
+
+            //create multipoint method2
+            var multipoint = new Multipoint(new SpatialReference({wkid:4326}));
+            multipoint.addPoint(new Point([120.63,25.51]));
+
+            var markerSymbol = new SimpleMarkerSymbol();
+            markerSymbol.setColor(new Color("#00FFFF"));
+            markerSymbol.setSize(5);
+            markerSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
+
+
+            var graphicMultipoint = new Graphic(mp, markerSymbol);
+            // add a point
+
+            var point = new Point( {"x": 110, "y": 25, "spatialReference": {"wkid": 4326 } });
+            var attr = {"x":110,"y":25,"name":"temp","picId":"id"};
+            var graphicPoint = new Graphic(point,markerSymbol, attr);
+
+
+            map.on("load", function() {
+                //map.graphics.add(graphicMultipoint);
+                map.graphics.add(graphicPoint);
+            });
+
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

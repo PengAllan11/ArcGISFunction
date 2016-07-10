@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Design Points Layer</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.15/"></script>
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/on",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/LabelClass",
+            "esri/InfoTemplate",
+            "esri/SpatialReference",
+            "esri/geometry/Point",
+            "esri/Color",
+            "esri/graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/TextSymbol",
+            "dojo/domReady!"
+        ], function(dom, on, Map,FeatureLayer,ArcGISTiledMapServiceLayer,LabelClass, InfoTemplate,
+                    SpatialReference,Point,Color, Graphic,GraphicsLayer,SimpleMarkerSymbol,TextSymbol) {
+            //create map and add layer
+            var map = new Map("map", {
+                //basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                showLabels:true,
+                logo: false
+            });
+            var baseMap = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
+            map.addLayer(baseMap);
+
+            var map2 = new Map("map2", {
+                //basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                showLabels:true,
+                logo: false
+            });
+            var baseMap2 = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
+            map2.addLayer(baseMap2);
+
+
+
+
+
+            //LabelLayer的render以及定义
+//            var labelSymbol = new TextSymbol({
+//                color:new Color([255,0,255]),
+//                font:{
+//                    size:12,
+//                    family:"黑体"
+//                },
+//                xoffset: -25,
+//                yoffset: -30
+//            });
+//            var labelJson = {
+//                "labelExpressionInfo": {"value": "{location}:{crimeGroupType}"},
+//                "useCodedValues": true,
+//                "labelPlacement":"always-horizontal"
+//            };
+
+//            console.log(graphic);
+//            var lc = new LabelClass(labelJson);
+//            lc.symbol = labelSymbol; // symbol also can be set in LabelClass' json
+//            pointsLayer.setLabelingInfo([ lc ]);
+//            pointsLayer.setShowLabels(true);
+
+//            pointsLayer.on("edits-complete", function() {
+////                pointsLayer.applyEdits([graphic[0]]);
+////                pointsLayer.applyEdits([graphic[1]]);
+//                map.addLayer(pointsLayer);
+//                console.log(pointsLayer);
+//            });
+
+
+
+            var marker = new SimpleMarkerSymbol();
+            marker.setPath("M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z");
+            marker.setColor(new Color([255, 255, 190, 0.51]));
+            marker.setSize(30);
+            marker.setStyle(SimpleMarkerSymbol.STYLE_PATH);
+            //define our own featurelayer
+            var layerDefinition = {
+                "objectIdField": "OBJECTID",
+                "geometryType": "esriGeometryPoint",
+                "fields": [{
+                    "name": "OBJECTID",
+                    "type": "esriFieldTypeOID",
+                    "alias": "OBJECTID",
+                    "sqlType": "sqlTypeOther"
+                },{
+                    "name": "LNG",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "LNG"
+                },{
+                    "name": "LAT",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "LAT"
+                },{
+                    "name": "LOCATION",
+                    "type": "esriFieldTypeString",
+                    "alias": "LOCATION"
+                },{
+                    "name": "CRIMEGROUPTYPE",
+                    "type": "esriFieldTypeString",
+                    "alias": "CRIMEGROUPTYPE"
+                },{
+                    "name": "CLUE",
+                    "type": "esriFieldTypeString",
+                    "alias": "CLUE"
+                }]
+            }
+            var featureCollection = {
+                layerDefinition: layerDefinition,
+                featureSet: null
+            };
+            var point = new Array();
+            var graphic = new Array();
+            var attr=[
+                {LAT:"29.412665",LNG:"106.149673",LOCATION:"丁家",CRIMEGROUPTYPE:"仓储窝点",CLUE:"重庆战役"},
+                {LAT:"29.433738",LNG:"106.210299",LOCATION:"来凤",CRIMEGROUPTYPE:"假烟",CLUE:"重庆战役"}
+            ];
+//            point[0] = new Point(attr[0].LNG, attr[0].LAT, map2.spatialReference);
+//            point[1] = new Point(attr[1].LNG, attr[1].LAT, map2.spatialReference);
+//
+//            graphic[0] = new Graphic(point[0],marker,attr[0]);
+//            graphic[1] = new Graphic(point[1],marker,attr[1]);
+
+            function temp(){
+                point[0] = new Point(attr[0].LNG, attr[0].LAT, map2.spatialReference);
+                point[1] = new Point(attr[1].LNG, attr[1].LAT, map2.spatialReference);
+
+                graphic[0] = new Graphic(point[0],marker,attr[0]);
+                graphic[1] = new Graphic(point[1],marker,attr[1]);
+            }
+
+            function test(){
+
+                var pointsLayer = new FeatureLayer(featureCollection);
+                map2.addLayer(pointsLayer);
+//                for(var i=0;i<graphic.length;i++){
+//                    pointsLayer.applyEdits([graphic[i]]);
+//                }
+                console.log("h2");
+
+                map2.on("zoom-end", function() {
+                    console.log("h3");
+                    for(var i=0;i<graphic.length;i++){
+                        pointsLayer.applyEdits([graphic[i]]);
+                    }
+
+                    console.log(pointsLayer);
+                });
+
+
+
+            }
+
+
+            map.on("load", function() {
+
+                console.log(map.spatialReference);
+                point[0] = new Point({"x": attr[0].LNG, "y":attr[0].LAT, "spatialReference": {"wkid": 4326 }});
+                point[1] = new Point(attr[1].LNG, attr[1].LAT, map.spatialReference);
+
+                graphic[0] = new Graphic(point[0],marker,attr[0]);
+                graphic[1] = new Graphic(point[1],marker,attr[1]);
+
+                console.log(graphic);
+
+            });
+
+            map.on("zoom-end", function() {
+//                console.log(graphic);
+//                test();
+//                console.log("he");
+
+
+                var pointsLayer = new FeatureLayer(featureCollection);
+                map.addLayer(pointsLayer);
+//                for(var i=0;i<graphic.length;i++){
+//                    pointsLayer.applyEdits([graphic[i]]);
+//                }
+                pointsLayer.applyEdits([graphic[0]]);
+
+
+            });
+
+
+            map.on("zoom-start", function() {
+
+                //temp();
+                //console.log("hs");
+
+
+            });
+
+
+
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="map2"></div>
+</body>
+</html>

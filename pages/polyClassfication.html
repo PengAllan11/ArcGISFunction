@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        function out(){
+            console.log("haha");
+        }
+    </script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/dijit/Legend",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/FeatureLayer",
+            "esri/layers/LabelClass",
+            "esri/renderers/ClassBreaksRenderer",
+            "esri/renderers/SimpleRenderer",
+            "esri/Color",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/TextSymbol",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map,Legend,ArcGISTiledMapServiceLayer, FeatureLayer,LabelClass,ClassBreaksRenderer,
+                    SimpleRenderer,Color, SimpleFillSymbol,SimpleLineSymbol,TextSymbol) {
+
+            var countryData=[{GROUPNUM: "1",PEOPLENUM: "3",PROVINCE: "河南"},{GROUPNUM:"1",PEOPLENUM:"3",PROVINCE:"江苏"},{GROUPNUM:"2",PEOPLENUM:"6",PROVINCE:"重庆"}]
+
+            var map = new Map("map", {
+                center: [105, 35],
+                zoom: 5,
+                minZoom: 3,
+                maxZoom: 7,
+                showLabels : true,
+                logo: false
+            });
+            //添加背景图
+            var TiledMap = new ArcGISTiledMapServiceLayer("http://10.60.38.158:6080/arcgis/rest/services/ChinaProvinceTiles5/MapServer");
+            map.addLayer(TiledMap);
+
+            var chinaProLayer = new FeatureLayer("http://10.60.38.158:6080/arcgis/rest/services/ChinaProvinceDynamic/MapServer/0",{
+                //注意这里的mode一定要指定MODE_SNAPSHOT，否则每次放大或缩小或者是平移都会执行FeatureLayer的update-end操作
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"]
+            });
+            map.addLayer(chinaProLayer);
+            var renderer = new ClassBreaksRenderer(null, "NUM3");
+
+            renderer.addBreak({
+                minValue:1,
+                maxValue:3,
+                symbol:new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID).setOutline(new SimpleLineSymbol().setWidth(0.1).setColor(new Color([128,128,128]))).setColor(new Color([56, 168, 0, 0.5])),
+                label: "低(1-3)"
+            });
+            renderer.addBreak({
+                minValue:3,
+                maxValue:6,
+                symbol:new SimpleFillSymbol("solid",null,null).setOutline(new SimpleLineSymbol().setWidth(0.1).setColor(new Color([128,128,128]))).setColor(new Color([0, 0, 255, 0.5])),
+                label: "中(4-6)"
+            });
+
+            var definition = "NAME in ('";
+            definition = definition+countryData[0].PROVINCE+"'";
+            for(var i=1;i<countryData.length;i++){
+                definition =definition+ ",'"+countryData[i].PROVINCE+"'"
+            }
+            definition+=")";
+            console.log(definition);
+            chinaProLayer.setDefinitionExpression(definition);
+
+            chinaProLayer.on("update-end", function(){
+                //输出其中一个graphic(面要素)的所有属性
+                for(var i = 0;i<chinaProLayer.graphics.length;i++){
+                    //自定义数据，在每个面要素中添加nico属性
+                    chinaProLayer.graphics[i].attributes["NUM1"]=0;
+                    chinaProLayer.graphics[i].attributes["NUM2"]=0;
+                    chinaProLayer.graphics[i].attributes["NUM3"]=0;
+                    for(var j=0;j<countryData.length;j++){
+                        if(chinaProLayer.graphics[i].attributes["NAME"] == countryData[j].PROVINCE){
+                            chinaProLayer.graphics[i].attributes["NUM2"]=countryData[j].PEOPLENUM;
+                            chinaProLayer.graphics[i].attributes["NUM3"]=countryData[j].PEOPLENUM;
+                            chinaProLayer.graphics[i].attributes["NUM1"]=countryData[j].GROUPNUM;
+                            break;
+                        }
+                    }
+                }
+                chinaProLayer.setRenderer(renderer);
+                createLegend(map,chinaProLayer);
+
+                console.log(chinaProLayer.graphics[1].attributes);
+
+                var labelSymbol = new TextSymbol({
+                    color:new Color([255,0,255]),
+                    font:{
+                        size:12,
+                        family:"黑体"
+                    },
+                    xoffset: 50,
+                    yoffset: 20
+                });
+
+                var labelJson = {
+                    "labelExpressionInfo": {"value": "{NAME}:{NUM1}个窝点，{NUM2}个嫌疑人"},
+                    "useCodedValues": true,
+                    "labelPlacement":"always-horizontal"
+                };
+                var lc = new LabelClass(labelJson);
+                lc.symbol = labelSymbol; // symbol also can be set in LabelClass' json
+                chinaProLayer.setLabelingInfo([ lc ]);
+                chinaProLayer.redraw();
+            });
+
+            //创建legend
+            function createLegend(map, layer) {
+                legend = new Legend({
+                    map: map,
+                    layerInfos: [{
+                        layer: layer,
+                        title: "窝点数量(个)"
+                    }]
+                }, "legendDiv");
+                legend.startup();
+            }
+        });
+    </script>
+</head>
+<body>
+<div id="map">
+    <div id="info"><div id="legendDiv"></div></div>
+</div>
+
+
+</body>
+</html>

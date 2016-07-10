@@ -1,0 +1,49 @@
+html,
+body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#map {
+    float:left;
+    height: 100%;
+    margin: 20px 20px 20px 20px;
+    width: 1000px;
+    height: 800px;
+    padding: 0;
+    border:1px solid #000;
+    /*background: #090849;*/
+    position: relative;
+}
+#mapDiv {
+    height: 100%;
+    margin: 20px 20px 20px 20px;
+    width: 1000px;
+    height: 800px;
+    padding: 0;
+    border:1px solid #000;
+}
+#search {
+    display: block;
+    position: absolute;
+    z-index: 2;
+    top: 80px;
+    left: 100px;
+}
+#info {
+    font-family: "黑体";
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    width: 110px;
+    position: absolute;
+    z-index: 99;
+    opacity: 0.9;
+    background-color: whitesmoke;
+    border-radius: 8px;
+    padding: 0px 0px 0px 10px;
+}
+
+#map2{
+    float:left;
+}

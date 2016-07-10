@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/map.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.15/"></script>
+
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/_base/connect",
+            "esri/map",
+            "esri/dijit/BasemapLayer",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/geometry/Point",
+            "esri/geometry/Multipoint",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/TextSymbol",
+            "esri/symbols/Font",
+            "esri/Color",
+            "esri/InfoTemplate",
+            "esri/geometry/Polyline",
+            "esri/graphic",
+            "esri/SpatialReference",
+            "dojo/domReady!"
+        ], function (dom,connect, Map,BasemapLayer,FeatureLayer,ArcGISTiledMapServiceLayer,GraphicsLayer,
+                     Point,Multipoint,SimpleMarkerSymbol, SimpleLineSymbol,TextSymbol,Font,Color,InfoTemplate, Polyline,Graphic,SpatialReference) {
+
+            var markerSymbol = new SimpleMarkerSymbol({
+                "color": [255,255,0,255],
+                "size": 12,
+                "style": "STYLE_CIRCLE",
+                "outline": null
+            });
+
+
+            function createPointGraphic(pointCluster){
+                var multiPoints = new Multipoint(new SpatialReference({wkid:4326}));
+                multiPoints.points = pointCluster;
+
+                var multipointGraphic = new Graphic(multiPoints, markerSymbol);
+                console.log(multipointGraphic);
+                return multipointGraphic;
+
+            }
+
+            function createALineArr(path){
+                var bias = 15;
+                var angle = Math.atan2(path[0][1]-path[1][1],path[0][0]-path[1][0]);
+                angle = angle > 0 ? angle:angle+2*Math.PI;
+
+                var arrowLen = 0.1;
+
+                var lineArr = new Array();
+                lineArr[0] = path;
+
+                var arrow1 = new Array();
+                arrow1[0] = path[1];
+                arrow1[1] = new Array();
+                arrow1[1][0] = path[1][0]+arrowLen*Math.cos(angle-bias/180*Math.PI);
+                arrow1[1][1] = path[1][1]+arrowLen*Math.sin(angle-bias/180*Math.PI);
+                lineArr[1] = arrow1;
+
+                var arrow2 = new Array();
+                arrow2[0] = path[1];
+                arrow2[1] = new Array();
+                arrow2[1][0] = path[1][0]+arrowLen*Math.cos(angle+bias/180*Math.PI);
+                arrow2[1][1] = path[1][1]+arrowLen*Math.sin(angle+bias/180*Math.PI);
+                lineArr[2] = arrow2;
+
+                return lineArr;
+            }
+
+            function createLineArrGraphic(pointCluster){
+                var paths = new Array();
+                for(var i = 0 ;i <pointCluster.length-1;i++){
+                    var path = Array(pointCluster[i],pointCluster[i+1]);
+                    var temp = createALineArr(path);
+                    paths = paths.concat(temp);
+                }
+                var polylineJson = {
+                    "paths":paths,
+                    "spatialReference":{"wkid":4326}
+                };
+                var multiLines = new Polyline(polylineJson);
+                var symbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,255,0]), 1.7);
+                var lineGraphic = new Graphic(multiLines, symbol);
+
+                return lineGraphic;
+            }
+
+            function createPath(points) {
+                var multipointGraphic = createPointGraphic(points);
+                var lineGraphic = new createLineArrGraphic(points);
+
+                var textSym = new TextSymbol({
+                    text:"莱阳路231号 - 7天快捷酒店",
+                    font: {
+                        size: "11pt",
+                        family: "黑体"
+                    },
+                    color:[255,255,255],
+                    yoffset: -22
+                });
+                var point = new Point( {"x": 120.65,"y":28.01, "spatialReference": {"wkid": 4326 } });
+                var graphicText = new Graphic(point,textSym);
+
+                var pathLayer = new GraphicsLayer({opacity:1});
+                pathLayer.add(multipointGraphic);
+                pathLayer.add(lineGraphic);
+                pathLayer.add(graphicText);
+
+                map.addLayer(pathLayer);
+            }
+
+            var map = new Map("map", {
+                center: [120.48, 29.22], // lon, lat
+                minZoom: 7,
+                maxZoom: 10,
+                zoom:8,
+                fadeOnZoom: true,
+                logo: false
+            });
+
+
+            var zhejiangLayer = new ArcGISTiledMapServiceLayer("http://localhost:6080/arcgis/rest/services/Zhejiang_tiles/MapServer");
+            map.addLayer(zhejiangLayer);
+
+            map.on("load", function() {
+                var paths = [[120.65,28.01],[120.58,30.01],[120.19,30.26],[118.88,28.97]];
+                createPath(paths);
+            });
+        });
+    </script>
+
+    <title>path</title>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

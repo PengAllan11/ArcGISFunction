@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/map.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.15/"></script>
+
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/_base/connect",
+            "esri/map",
+            "esri/dijit/BasemapLayer",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/geometry/Point",
+            "esri/geometry/Multipoint",
+            "esri/geometry/Polyline",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/TextSymbol",
+            "esri/symbols/Font",
+            "esri/Color",
+            "esri/InfoTemplate",
+            "esri/graphic",
+            "esri/SpatialReference",
+            "dojo/domReady!"
+        ], function (dom,connect, Map,BasemapLayer,FeatureLayer,ArcGISTiledMapServiceLayer,GraphicsLayer,
+                     Point,Multipoint,Polyline,SimpleMarkerSymbol, SimpleLineSymbol,TextSymbol,Font,Color,InfoTemplate,Graphic,SpatialReference) {
+
+            var pointSymbol = new SimpleMarkerSymbol({
+                "color": [255,255,0,255],
+                "size": 12,
+                "style": "STYLE_CIRCLE",
+                "outline": null
+            });
+            //var lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,255,0]), 1.7);
+            var lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,255,0]), 1.7);
+
+            function createPointGraphic(x,y,info){
+                var infoTemplate = new InfoTemplate("Info","address: ${address}");
+                var textSymbol = new TextSymbol({
+                    text:info,
+                    font: {
+                        size: "10pt",
+                        family: "黑体"
+                    },
+                    color:[255,255,255],
+                    yoffset: -22
+                });
+
+                var point = new Point(
+                        {
+                            "x": x,
+                            "y": y,
+                            "spatialReference": {"wkid": 4326 }
+                        });
+                var attr = {address:info};
+                var pointGraphic = new Graphic(point,pointSymbol, attr,infoTemplate);
+                var textGraphic = new Graphic(point,textSymbol);
+                return [pointGraphic,textGraphic];
+            }
+
+            function createArrowLineGraphic(line){
+                var lineArr = [[line[0].x,line[0].y],[line[1].x,line[1].y]];
+
+                var bias = 15;
+                var angle = Math.atan2(line[0].y-line[1].y,line[0].x-line[1].x);
+                angle = angle > 0 ? angle:angle+2*Math.PI;
+
+                var arrowLen = 0.08;
+
+                var arrow1 = new Array();
+                arrow1[0] = lineArr[1];
+                arrow1[1] = new Array();
+                arrow1[1][0] = line[1].x+arrowLen*Math.cos(angle-bias/180*Math.PI);
+                arrow1[1][1] = line[1].y+arrowLen*Math.sin(angle-bias/180*Math.PI);
+
+                var arrow2 = new Array();
+                arrow2[0] = lineArr[1];
+                arrow2[1] = new Array();
+                arrow2[1][0] = line[1].x+arrowLen*Math.cos(angle+bias/180*Math.PI);
+                arrow2[1][1] = line[1].y+arrowLen*Math.sin(angle+bias/180*Math.PI);
+
+
+
+                console.log([lineArr,arrow1,arrow2]);
+
+                var polylineJson = {
+                    "paths":[lineArr,arrow1,arrow2],
+                    "spatialReference":{"wkid":4326}
+                };
+                var track = new Polyline(polylineJson);
+
+                var lineGraphic = new Graphic(track, lineSymbol);
+                return lineGraphic;
+            }
+
+            function createPath(paths) {
+
+                var pathLayer = new GraphicsLayer({opacity:1});
+
+                //创建点集
+                for(var i = 0;i<paths.points.length;i++){
+                    var graPoint = createPointGraphic(paths.points[i].x,paths.points[i].y,paths.points[i].address);
+                    pathLayer.add(graPoint[0]);
+                    pathLayer.add(graPoint[1]);
+                }
+
+                for(var i = 0; i<paths.lines.length;i++){
+                    var graLine = createArrowLineGraphic(paths.lines[i]);
+                    pathLayer.add(graLine);
+                }
+
+                map.addLayer(pathLayer);
+            }
+
+            var map = new Map("map", {
+                center: [120.48, 29.22], // lon, lat
+                minZoom: 7,
+                maxZoom: 10,
+                zoom:8,
+                fadeOnZoom: true,
+                logo: false
+            });
+
+
+            var zhejiangLayer = new ArcGISTiledMapServiceLayer("http://10.60.38.158:6080/arcgis/rest/services/Zhejiang_background/MapServer");
+            map.addLayer(zhejiangLayer);
+
+            map.on("load", function() {
+
+                var paths = {
+                    points:[
+                        {x:120.65,y:28.01,address:"莱阳路231号 - 7天快捷酒店"},
+                        {x:120.41,y:29.87,address:"赤峰路138号 - X网吧"},
+                        {x:119.35,y:29.71,address:"本金路南汇路交叉口 - 招商银行ATM"},
+                        {x:118.58,y:29.10,address:"会徐路603号 - 松江大酒店"},
+                        {x:119.75,y:28.91,address:"真南路238号 - 中国银行营业点"}
+                    ],
+                    lines:[
+                        [{x:120.65,y:28.01},{x:120.41,y:29.87}],
+                        [{x:120.41,y:29.87},{x:119.35,y:29.71}],
+                        [{x:119.35,y:29.71},{x:118.58,y:29.10}],
+                        [{x:119.35,y:29.71},{x:119.75,y:28.91}]
+                    ]
+                }
+                createPath(paths);
+            });
+        });
+    </script>
+
+    <title>CrimeTrack</title>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

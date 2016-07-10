@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Graphics heatmap</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.15/"></script>
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/on",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/InfoTemplate",
+            "esri/SpatialReference",
+            "esri/geometry/Point",
+            "esri/Color",
+            "esri/graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/renderers/HeatmapRenderer",
+            "dojo/domReady!"
+        ], function(dom, on, Map,FeatureLayer,ArcGISTiledMapServiceLayer, InfoTemplate,
+                    SpatialReference,Point,Color, Graphic,GraphicsLayer,HeatmapRenderer) {
+            //create map and add layer
+            map = new Map("map", {
+                basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+            var baseMap = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
+            map.addLayer(baseMap);
+
+
+            //define our own featurelayer
+            var layerDefinition = {
+                "objectIdField": "OBJECTID",
+                "geometryType": "esriGeometryPoint",
+                "fields": [{
+                    "name": "OBJECTID",
+                    "type": "esriFieldTypeOID",
+                    "alias": "OBJECTID",
+                    "sqlType": "sqlTypeOther"
+                },{
+                    "name": "lng",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lng"
+                },{
+                    "name": "lat",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lat"
+                },{
+                    "name": "heat",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "heat"
+                }]
+            }
+
+            var heatmapRenderer = new HeatmapRenderer({
+                field: "heat",
+                colorStops:[
+                    { ratio: 0, color: "rgba(255,0,0,0)" },
+                    { ratio: 0.6, color: "rgb(91, 252, 57)" },
+                    { ratio: 0.85, color: "rgb(230, 254, 18)"},
+                    { ratio: 0.95, color: "rgb(255, 0, 0)"}
+                ],
+                blurRadius: 10,
+                maxPixelIntensity: 30,
+                minPixelIntensity: 0
+            });
+
+            var attr=[
+                {OBJECTID:1, lng:110, lat:25, heat:5},
+                {OBJECTID:2, lng:120.63, lat:25.51, heat:1},
+                {OBJECTID:3, lng:120.56, lat:25.51,heat:15}
+            ];
+            var point = new Array();
+            point[0] = new Point(attr[0].lng, attr[0].lat, map.spatialReference);
+            point[1] = new Point(attr[1].lng, attr[1].lat, map.spatialReference);
+            point[2] = new Point(attr[2].lng, attr[2].lat, map.spatialReference);
+
+            var graphic = new Array();
+            graphic[0] = new Graphic(point[0],null,attr[0]);
+            graphic[1] = new Graphic(point[1],null,attr[1]);
+            graphic[2] = new Graphic(point[2],null,attr[2]);
+
+
+            var featureCollection = {
+                layerDefinition: layerDefinition,
+                featureSet: null
+            };
+            var heatmapLayer = new FeatureLayer(featureCollection);
+            heatmapLayer.setRenderer(heatmapRenderer);
+            map.addLayer(heatmapLayer);
+
+            map.on("load", function() {
+                heatmapLayer.applyEdits([graphic[0]]);
+                heatmapLayer.applyEdits([graphic[1]]);
+                heatmapLayer.applyEdits([graphic[2]]);
+                console.log(heatmapLayer);
+
+                console.log(heatmapLayer.dataAttributes);
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

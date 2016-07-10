@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/map.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.15/"></script>
+
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/_base/connect",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/geometry/Point",
+            "esri/geometry/Multipoint",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/Color",
+            "esri/InfoTemplate",
+            "esri/geometry/Polyline",
+            "esri/graphic",
+            "dojo/domReady!"
+        ], function (dom,connect, Map,FeatureLayer,ArcGISDynamicMapServiceLayer,GraphicsLayer,
+                     Point,Multipoint,SimpleMarkerSymbol, SimpleLineSymbol,Color,InfoTemplate, Polyline,Graphic) {
+
+            //from and to are array[2]
+            function createPath(from, to) {
+
+                //create points
+                var multiPoints = new Multipoint({"spatialReference":{"wkid":4326}});
+                multiPoints.points = [
+                    [from[0],from[1]],
+                    [to[0],to[1]]];
+
+                var markerSymbol = new SimpleMarkerSymbol({
+                    "color": [255,255,0,255],
+                    "size": 12,
+                    "type": "esriSMS",
+                    "style": "esriSMSCircle",
+                    "outline": null
+                });
+
+                var multipointGraphic = new Graphic(multiPoints, markerSymbol);
+
+                //create lines
+                var bias = 15;
+                var angle = Math.atan2(from[1]-to[1],from[0]-to[0]);
+                angle = angle > 0 ? angle:angle+2*Math.PI;
+
+                var arrowLen = 0.1;
+
+                var arrow1 = new Array();
+                arrow1[0] = to[0]+arrowLen*Math.cos(angle-bias/180*Math.PI);
+                arrow1[1] = to[1]+arrowLen*Math.sin(angle-bias/180*Math.PI);
+
+                var arrow2 = new Array();
+                arrow2[0] = to[0]+arrowLen*Math.cos(angle+bias/180*Math.PI);
+                arrow2[1] = to[1]+arrowLen*Math.sin(angle+bias/180*Math.PI);
+
+                var polylineJson = {
+                    "paths":[
+                        [[from[0],from[1]],[to[0],to[1]]],
+                        [[arrow1[0],arrow1[1]],[to[0],to[1]]],
+                        [[arrow2[0],arrow2[1]],[to[0],to[1]]]],
+                    "spatialReference":{"wkid":4326}
+                };
+                //var polyline = new Polyline([[120.65,28.01],[120.19,30.26]]);
+                var polyline = new Polyline(polylineJson);
+                var symbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,255,0]), 1.7);
+                var lineGraphic = new Graphic(polyline, symbol);
+
+
+
+                var lineLayer = new GraphicsLayer({opacity:1});
+                lineLayer.add(multipointGraphic);
+                lineLayer.add(lineGraphic);
+                map.addLayer(lineLayer);
+            }
+
+            var map = new Map("map", {
+                center: [120.48, 29.22], // lon, lat
+                zoom: 9,
+                maxZoom: 16,
+                minZoom: 4,
+                fadeOnZoom: true,
+                logo: false
+            });
+            var baseMap = new ArcGISDynamicMapServiceLayer("http://10.60.38.154:6080/arcgis/rest/services/Zhejiang_background/MapServer");
+            map.addLayer(baseMap);
+
+            map.on("load", function() {
+                var from = [120.65,28.01];
+                var to = [120.19,30.26];
+                createPath(from,to);
+            });
+        });
+    </script>
+
+    <title>path</title>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

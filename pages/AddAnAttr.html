@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/renderers/SimpleRenderer",
+            "esri/Color",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map, FeatureLayer,SimpleRenderer,Color,SimpleFillSymbol,SimpleLineSymbol) {
+            var map = new Map("map", {
+                basemap: "topo",
+                center: [121, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+            //笔者server上的图层
+            var featureLayer = new FeatureLayer("http://localhost:6080/arcgis/rest/services/ChinaProvince/MapServer/0",{
+                //注意这里的mode一定要指定MODE_SNAPSHOT，否则每次放大或缩小或者是平移都会执行FeatureLayer的update-end操作
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"]
+            });
+            map.addLayer(featureLayer);
+            //定义一个render对FeatureLayer自定义的数据进行渲染
+            var renderer = new SimpleRenderer(new SimpleFillSymbol().setOutline(new SimpleLineSymbol().setWidth(0.1).setColor(new Color([128,128,128]))));
+            renderer.setColorInfo({
+                //使用nico属性进行渲染
+                field: "nico",
+                minDataValue: 0,
+                maxDataValue: 40,
+                colors: [
+                    new Color([0, 255, 0]),
+                    new Color([255, 0, 0])
+                ]
+            });
+            featureLayer.on("update-end", function(){
+                //输出其中一个graphic(面要素)的所有属性
+                for(var i = 0;i<featureLayer.graphics.length;i++){
+                    //自定义数据，在每个面要素中添加nico属性
+                    featureLayer.graphics[i].attributes["nico"]=i;
+                }
+                featureLayer.setRenderer(renderer);
+                featureLayer.redraw();
+                //输出FeatureLayer中所有的graphic数
+                console.log("number of graphics in featureLayer:"+featureLayer.graphics.length);
+                //输出其中一个graphic(面要素)的所有属性
+                console.log("10th graphic attributes in featureLayer:");
+                console.log(featureLayer.graphics[10].attributes);
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

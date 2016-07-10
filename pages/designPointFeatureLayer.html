@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Design Points Layer</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.15/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.15/"></script>
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/on",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/InfoTemplate",
+            "esri/SpatialReference",
+            "esri/geometry/Point",
+            "esri/Color",
+            "esri/graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/symbols/SimpleMarkerSymbol",
+            "dojo/domReady!"
+        ], function(dom, on, Map,FeatureLayer,ArcGISTiledMapServiceLayer, InfoTemplate,
+                    SpatialReference,Point,Color, Graphic,GraphicsLayer,SimpleMarkerSymbol) {
+            //create map and add layer
+            map = new Map("map", {
+                basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+            var baseMap = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
+            map.addLayer(baseMap);
+
+
+            var marker = new SimpleMarkerSymbol();
+            marker.setPath("M16,3.5c-4.142,0-7.5,3.358-7.5,7.5c0,4.143,7.5,18.121,7.5,18.121S23.5,15.143,23.5,11C23.5,6.858,20.143,3.5,16,3.5z M16,14.584c-1.979,0-3.584-1.604-3.584-3.584S14.021,7.416,16,7.416S19.584,9.021,19.584,11S17.979,14.584,16,14.584z");
+            marker.setColor(new Color([255, 255, 190, 0.51]));
+            marker.setSize(30);
+            marker.setStyle(SimpleMarkerSymbol.STYLE_PATH);
+            //define our own featurelayer
+            var layerDefinition = {
+                "objectIdField": "OBJECTID",
+                "geometryType": "esriGeometryPoint",
+                "fields": [{
+                    "name": "OBJECTID",
+                    "type": "esriFieldTypeOID",
+                    "alias": "OBJECTID",
+                    "sqlType": "sqlTypeOther"
+                },{
+                    "name": "lng",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lng"
+                },{
+                    "name": "lat",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lat"
+                },{
+                    "name": "location",
+                    "type": "esriFieldTypeString",
+                    "alias": "location"
+                },{
+                    "name": "crimeGroupType",
+                    "type": "esriFieldTypeString",
+                    "alias": "crimeGroupType"
+                },{
+                    "name": "clue",
+                    "type": "esriFieldTypeString",
+                    "alias": "clue"
+                }]
+            }
+
+            var attr=[
+                {OBJECTID:1,LAT:"29.412665",LNG:"106.149673",SZD:"丁家",WDLX:"仓储窝点",XSMC:"重庆战役"},
+                {OBJECTID:1,LAT:"29.433738",LNG:"106.210299",SZD:"来凤",WDLX:"假烟",XSMC:"重庆战役"}
+            ];
+            var point = new Array();
+            point[0] = new Point(attr[0].LNG, attr[0].LAT, map.spatialReference);
+            point[1] = new Point(attr[1].LNG, attr[1].LAT, map.spatialReference);
+
+            var graphic = new Array();
+            graphic[0] = new Graphic(point[0],marker,attr[0]);
+            graphic[1] = new Graphic(point[1],marker,attr[1]);
+
+
+            var featureCollection = {
+                layerDefinition: layerDefinition,
+                featureSet: null
+            };
+
+            var pointsLayer = new FeatureLayer(featureCollection);
+
+            map.addLayer(pointsLayer);
+
+            map.on("load", function() {
+                pointsLayer.applyEdits([graphic[0]]);
+                pointsLayer.applyEdits([graphic[1]]);
+
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

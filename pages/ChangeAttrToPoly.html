@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show Multipoint</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/renderers/HeatmapRenderer",
+            "esri/renderers/SimpleRenderer",
+            "esri/Color",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/symbols/SimpleLineSymbol",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map, FeatureLayer,HeatmapRenderer,SimpleRenderer,Color,SimpleFillSymbol,SimpleLineSymbol) {
+            //create map and add layer
+
+            var map = new Map("map", {
+                basemap: "topo",
+                center: [122, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+            //var baseMap = new ArcGISTiledMapServiceLayer("http://10.60.38.158:6080/arcgis/rest/services/Zhejiang_background/MapServer");
+            //map.addLayer(baseMap);
+            var infoTemplate = new InfoTemplate("${cname}", "${ename} : ${heat}");
+            var featureLayer = new FeatureLayer("http://10.60.38.158:6080/arcgis/rest/services/Zhejiang_background/MapServer/1",{
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                infoTemplate: infoTemplate,
+                outFields: ["*"]
+            });
+            map.addLayer(featureLayer);
+
+            map.on("load", function() {
+//                featureLayer.on("click", function(){
+//                    for(var i = 0;i<featureLayer.graphics.length;i++){
+//                        featureLayer.graphics[i].attributes["love"]=i;
+//                    }
+//                    console.log(featureLayer.graphics);
+//                    featureLayer.setRenderer(heatmapRenderer);
+//                });
+            });
+
+//            connect.connect(featureLayer, "onClick", function(evt) {
+//                console.log(featureLayer.graphics.length);
+//            });
+
+//            var heatmapRenderer = new HeatmapRenderer({
+//                field: "love",
+//                colorStops:[
+//                    { ratio: 0, color: "rgba(255,0,0,0)" },
+//                    { ratio: 0.6, color: "rgb(91, 252, 57)" },
+//                    { ratio: 0.85, color: "rgb(230, 254, 18)"},
+//                    { ratio: 0.95, color: "rgb(255, 0, 0)"}
+//                ],
+//                blurRadius: 5,
+//                maxPixelIntensity: 10,
+//                minPixelIntensity: 0
+//            });
+
+
+
+
+//            map.on("layer-add-result", function(featureLayer) {
+//                //console.log(featureLayer.graphics);
+//                console.log("in map length:"+featureLayer.length);
+//
+//            });
+
+            featureLayer.on("load", function(){
+                //featureLayer.setRenderer(heatmapRenderer);
+                console.log("length:"+layer.graphics.length);
+            });
+
+//            on(featureLayer, "load", function(layer){
+//                console.log("on length:"+featureLayer.graphics.length);
+//                //featureLayer.setRenderer(renderer);
+//            });
+
+            var renderer = new SimpleRenderer(new SimpleFillSymbol().setOutline(new SimpleLineSymbol().setWidth(0.1).setColor(new Color([128,128,128]))));
+            renderer.setColorInfo({
+                field: "love",
+                minDataValue: 0,
+                maxDataValue: 100,
+                colors: [
+                    new Color([255, 255, 255]),
+                    new Color([127, 127, 0])
+                ]
+            });
+
+//            featureLayer.on("update-end", function(){
+//
+//                console.log(featureLayer.graphics.length);
+//                var name='';
+//                var cal = 1;
+//                //featureLayer.graphics.length
+//                for(var i = 0;i<featureLayer.graphics.length;i++){
+//                    if(name!=featureLayer.graphics[i].attributes["NAME"]){
+//                        cal = cal+1;
+//                        name=featureLayer.graphics[i].attributes["NAME"];
+//                    }
+//                    featureLayer.graphics[i].attributes["heat"]=cal;
+//                }
+//                featureLayer.setRenderer(renderer);
+//                console.log(featureLayer.graphics);
+//                //console.log(featureLayer.graphics);
+//
+//            });
+
+            featureLayer.on("click", function(){
+
+                console.log(featureLayer.graphics.length);
+                var name='';
+                var cal = 1;
+                //featureLayer.graphics.length
+                for(var i = 0;i<featureLayer.graphics.length;i++){
+                    if(name!=featureLayer.graphics[i].attributes["NAME"]){
+                        cal = cal+1;
+                        name=featureLayer.graphics[i].attributes["NAME"];
+                    }
+                    featureLayer.graphics[i].attributes["love"]=cal;
+                }
+                featureLayer.setRenderer(renderer);
+                console.log(featureLayer.graphics);
+                //console.log(featureLayer.graphics);
+
+            });
+
+//            on(map, "zoom-end", function(){
+//                var renderer = new SimpleRenderer(new SimpleFillSymbol().setOutline(new SimpleLineSymbol().setWidth(0.1).setColor(new Color([128,128,128]))));
+//                renderer.setColorInfo({
+//                    field: "heat",
+//                    minDataValue: 0,
+//                    maxDataValue: 100,
+//                    colors: [
+//                        new Color([255, 255, 255]),
+//                        new Color([127, 127, 0])
+//                    ]
+//                });
+//
+//                console.log(featureLayer.graphics.length);
+//                var name='';
+//                var cal = 1;
+//                //featureLayer.graphics.length
+//                for(var i = 0;i<featureLayer.graphics.length;i++){
+//                    if(name!=featureLayer.graphics[i].attributes["NAME"]){
+//                        cal = cal+1;
+//                        name=featureLayer.graphics[i].attributes["NAME"];
+//                    }
+//                    featureLayer.graphics[i].attributes["heat"]=cal;
+//                }
+//                featureLayer.setRenderer(renderer);
+//                console.log(featureLayer.graphics);
+//
+//
+//            });
+
+//            featureLayer.on("load", function(){
+//                //featureLayer.setRenderer(heatmapRenderer);
+//                console.log(featureLayer.graphics);
+//            });
+
+//            featureLayer.on("click", function(){
+//                //console.log(featureLayer.graphics);
+//                for(var i = 0;i<featureLayer.graphics.length;i++){
+//                    featureLayer.graphics[i].attributes["love"]=i;
+//                }
+//                //console.log(featureLayer.graphics);
+//                featureLayer.setRenderer(heatmapRenderer);
+//                console.log("dataAttributes:"+featureLayer.dataAttributes);
+//            });
+
+
+
+
+
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>
