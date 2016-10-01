@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.18/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/3.18/"></script>
+    <script>
+        require([
+            "dojo/dom",
+            "dojo/on",
+            "esri/map",
+            "esri/InfoTemplate",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/GraphicsLayer",
+            "esri/tasks/QueryTask",
+            "esri/tasks/query",
+            "esri/symbols/PictureMarkerSymbol",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/InfoTemplate",
+            "esri/geometry/Multipoint",
+            "esri/SpatialReference",
+            "esri/geometry/Point",
+            "esri/Color",
+            "esri/graphic",
+            "dojo/domReady!"
+        ], function(dom, on, Map,InfoTemplate, ArcGISTiledMapServiceLayer,GraphicsLayer, QueryTask, Query, PictureMarkerSymbol,
+                    SimpleMarkerSymbol, InfoTemplate, Multipoint, SpatialReference,Point,Color, Graphic) {
+            //create map and add layer
+            map = new Map("map", {
+                basemap: "streets",
+                center: [121.23, 31.05],
+                zoom: 11,
+                minZoom: 10,
+                maxZoom: 16,
+                logo: false
+            });
+
+//            var markerSymbol = new SimpleMarkerSymbol();
+//            markerSymbol.setColor(new Color("#00FFFF"));
+//            markerSymbol.setSize(5);
+//            markerSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
+            var pictureMarkerSymbol = new PictureMarkerSymbol('../static/bus.png',30,30);
+
+            // add a point
+            var point = new Point(121.23, 31.05, map.spatialReference);
+            var attr = {"x":121.23,"y":31.05,"name":"temp","picId":"id"};
+            var graphicPoint = new Graphic(point,pictureMarkerSymbol, attr);
+
+            var timeDao=100;
+            var sh = null;
+            function run()
+            {
+                var x = point.x;
+                var y = point.y;
+                x +=0.001;
+                y +=0.001;
+                console.log("now x:"+x+" ,y:"+y);
+                point.setLatitude(y);
+                point.setLongitude(x);
+                map.graphics.remove(graphicPoint);
+                map.graphics.add(graphicPoint);
+                map.graphics.redraw();
+
+                if(timeDao==0)
+                {
+                    clearInterval(sh);
+                    return;
+                }
+                timeDao--;
+                if(sh==null){
+                    sh=setInterval(run,40);
+                }
+            }
+
+            map.on("load", function() {
+                map.graphics.add(graphicPoint);
+                map.graphics.setInfoTemplate(InfoTemplate({title:"站点信息", content:"${*}"}));
+                run();
+            });
+        });
+
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

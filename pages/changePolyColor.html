@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+
+    <!--<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>-->
+    <!--<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>-->
+    <script src="https://js.arcgis.com/3.17/"></script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/renderers/UniqueValueRenderer",
+            "esri/Color",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map,FeatureLayer,SimpleLineSymbol,SimpleFillSymbol,
+                    UniqueValueRenderer,Color) {
+            var map = new Map("map", {
+                basemap: "topo",
+                center: [121, 35],
+                zoom: 4,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+
+            var mapWenzhou = new FeatureLayer("http://192.168.0.235:6080/arcgis/rest/services/Zhejiang_background_dynamic/MapServer/0",{
+                infoTemplate: new InfoTemplate("name", "${*}"),
+                outFields: ["*"]
+            });
+
+            map.addLayer(mapWenzhou);
+
+            var defaultSymbol = new SimpleFillSymbol().setStyle(SimpleFillSymbol.STYLE_NULL);
+            defaultSymbol.outline.setStyle(SimpleLineSymbol.STYLE_NULL);
+
+            //create renderer
+            var renderer = new UniqueValueRenderer(defaultSymbol, "BOUNDARY");
+
+            //add symbol for each possible value
+            renderer.addValue("administrative", new SimpleFillSymbol().setColor(new Color([255, 0, 0, 0.5])));
+
+
+            mapWenzhou.setRenderer(renderer);
+        });
+    </script>
+    <title>Change the color of Wenzhou</title>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>

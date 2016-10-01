@@ -12,7 +12,7 @@
             "dojo/_base/connect",
             "esri/map",
             "esri/layers/FeatureLayer",
-            "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/layers/ArcGISTiledMapServiceLayer",
             "esri/layers/GraphicsLayer",
             "esri/geometry/Point",
             "esri/geometry/Multipoint",
@@ -23,7 +23,7 @@
             "esri/geometry/Polyline",
             "esri/graphic",
             "dojo/domReady!"
-        ], function (dom,connect, Map,FeatureLayer,ArcGISDynamicMapServiceLayer,GraphicsLayer,
+        ], function (dom,connect, Map,FeatureLayer,ArcGISTiledMapServiceLayer,GraphicsLayer,
                      Point,Multipoint,SimpleMarkerSymbol, SimpleLineSymbol,Color,InfoTemplate, Polyline,Graphic) {
 
             //from and to are array[2]
@@ -69,7 +69,7 @@
                 };
                 //var polyline = new Polyline([[120.65,28.01],[120.19,30.26]]);
                 var polyline = new Polyline(polylineJson);
-                var symbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,255,0]), 1.7);
+                var symbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255,0,0]), 1.7);
                 var lineGraphic = new Graphic(polyline, symbol);
 
 
@@ -88,7 +88,7 @@
                 fadeOnZoom: true,
                 logo: false
             });
-            var baseMap = new ArcGISDynamicMapServiceLayer("http://10.60.38.154:6080/arcgis/rest/services/Zhejiang_background/MapServer");
+            var baseMap = new ArcGISTiledMapServiceLayer("http://cache1.arcgisonline.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer");
             map.addLayer(baseMap);
 
             map.on("load", function() {

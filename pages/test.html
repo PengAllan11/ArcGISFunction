@@ -1,43 +1,26 @@
 <!DOCTYPE html>
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../static/map.css">
-
-    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
-    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
     <title>test</title>
-    <style>
-        .main{
-            /*width: 100%;*/
+    <script>
+        var times=10;
+        var sh = null;
+        function run()
+        {
+            console.log(times);
+            if(times==0)
+            {
+                clearInterval(sh);
+                return;
+            }
+            times--;
+            if(sh==null){
+                sh=setInterval(run,100);
+            }
         }
-        .div1{
-            float: left;
-            width: 70%;
-        }
-        .div2{
-            float: left;
-            width: 30%;
-        }
-    </style>
+        run();
+    </script>
 </head>
 <body>
-
-
-
-<div class="main">
-    <div class="div1">
-        div1
-    </div>
-    <div class="div2">
-        div2
-    </div>
-</div>
-<script>
-    var dom = $("div.main>div.div1");
-    console.log(dom);
-</script>
-
 </body>
-
 </html>

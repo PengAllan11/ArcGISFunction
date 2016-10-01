@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.17/esri/css/esri.css">
+    <link rel="stylesheet" href="../static/map.css">
+    <script src="https://js.arcgis.com/3.17/"></script>
+
+    <title>Title</title>
+    <script>
+        var
+    </script>
+    <script>
+        require([
+            "dojo/_base/connect",
+            "dojo/dom",
+            "dojo/on",
+            "esri/InfoTemplate",
+            "esri/map",
+            "esri/layers/FeatureLayer",
+            "dojo/domReady!"
+        ], function(connect,dom, on, InfoTemplate, Map,FeatureLayer) {
+            var map = new Map("map", {
+                basemap: "topo",
+                center: [120, 33],
+                zoom: 6,
+                minZoom: 3,
+                maxZoom: 10,
+                logo: false
+            });
+
+            var layerDefinition = {
+                "objectIdField": "OBJECTID",
+                "geometryType": "esriGeometryPoint",
+                "fields": [{
+                    "name": "OBJECTID",
+                    "type": "esriFieldTypeOID",
+                    "alias": "OBJECTID",
+                    "sqlType": "sqlTypeOther"
+                },{
+                    "name": "lng",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lng"
+                },{
+                    "name": "lat",
+                    "type": "esriFieldTypeInteger",
+                    "alias": "lat"
+                },{
+                    "name": "location",
+                    "type": "esriFieldTypeString",
+                    "alias": "location"
+                }]
+            };
+            var attr=[
+                {OBJECTID:1,lat:"29.412665",lng:"106.149673",location:"7天假日连锁酒店"},
+                {OBJECTID:1,lat:"30.412665",lng:"107.149673",location:"格林豪泰"},
+                {OBJECTID:1,lat:"31.412665",lng:"108.149673",location:"全家超市"},
+                {OBJECTID:1,lat:"32.412665",lng:"109.149673",location:"万达影院"}
+            ];
+
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>
