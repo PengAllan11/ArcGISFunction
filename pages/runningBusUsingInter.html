@@ -41,47 +41,89 @@
                 logo: false
             });
 
-//            var markerSymbol = new SimpleMarkerSymbol();
-//            markerSymbol.setColor(new Color("#00FFFF"));
-//            markerSymbol.setSize(5);
-//            markerSymbol.setStyle(SimpleMarkerSymbol.STYLE_CIRCLE);
             var pictureMarkerSymbol = new PictureMarkerSymbol('../static/bus.png',30,30);
 
-            // add a point
+
             var point = new Point(121.23, 31.05, map.spatialReference);
             var attr = {"x":121.23,"y":31.05,"name":"temp","picId":"id"};
             var graphicPoint = new Graphic(point,pictureMarkerSymbol, attr);
 
-            var timeDao=100;
+            var time=10;
             var sh = null;
-            function run()
+
+            function _run(time)
+
             {
+
+                return function()
+
+                {
+
+                    run(time);
+
+                }
+
+            }
+
+            function run(time)
+            {
+                time--;
                 var x = point.x;
                 var y = point.y;
                 x +=0.001;
                 y +=0.001;
-                console.log("now x:"+x+" ,y:"+y);
                 point.setLatitude(y);
                 point.setLongitude(x);
                 map.graphics.remove(graphicPoint);
                 map.graphics.add(graphicPoint);
                 map.graphics.redraw();
 
-                if(timeDao==0)
+                if(time==0)
                 {
                     clearInterval(sh);
                     return;
                 }
-                timeDao--;
+
+            }
+
+            function runABus(time,x,y){
+                var i =0;
+                var sh = null;
+
                 if(sh==null){
-                    sh=setInterval(run,40);
+                    sh=setInterval(run,100);
+                }
+
+                function run()
+                {
+
+//                    var x = point.x;
+//                    var y = point.y;
+//                    x +=0.001;
+//                    y +=0.001;
+                    console.log(i);
+                    point.setLatitude(y[i]);
+                    point.setLongitude(x[i]);
+                    i++;
+                    map.graphics.remove(graphicPoint);
+                    map.graphics.add(graphicPoint);
+                    map.graphics.redraw();
+
+                    if(i>=time)
+                    {
+                        clearInterval(sh);
+                        return;
+                    }
                 }
             }
 
             map.on("load", function() {
                 map.graphics.add(graphicPoint);
                 map.graphics.setInfoTemplate(InfoTemplate({title:"站点信息", content:"${*}"}));
-                run();
+                var x=[121.23,121.24,121.25, 121.26,121.27,121.28, 121.29,121.30,121.31 ];
+                var y=[31.05,31.06,31.07, 31.07,31.07,31.07, 31.08,31.09,31.10];
+                runABus(9,x,y);
+
             });
         });
 

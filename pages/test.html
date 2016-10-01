@@ -3,22 +3,14 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
     <title>test</title>
     <script>
-        var times=10;
-        var sh = null;
-        function run()
-        {
-            console.log(times);
-            if(times==0)
-            {
-                clearInterval(sh);
-                return;
-            }
-            times--;
-            if(sh==null){
-                sh=setInterval(run,100);
-            }
+        var i=0;
+        function a(){
+            alert(i);
+            i++;
+            if(i)
+            setTimeout('a()',1000+i*1000);
         }
-        run();
+        a();
     </script>
 </head>
 <body>
