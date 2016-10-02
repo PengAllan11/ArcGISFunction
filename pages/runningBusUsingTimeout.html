@@ -51,21 +51,7 @@
             var time=10;
             var sh = null;
 
-            function _run(time)
-
-            {
-
-                return function()
-
-                {
-
-                    run(time);
-
-                }
-
-            }
-
-            function run(time)
+            function run()
             {
                 time--;
                 var x = point.x;
@@ -86,44 +72,14 @@
 
             }
 
-//            function runABus(time,x,y){
-//                var time=3;
-//                var sh = null;
-//
-//                if(sh==null){
-//                    sh=setInterval(run,40);
-//                }
-//                function run()
-//                {
-//                    time--;
-//                    var x = point.x;
-//                    var y = point.y;
-//                    x +=0.001;
-//                    y +=0.001;
-//                    point.setLatitude(y);
-//                    point.setLongitude(x);
-//                    map.graphics.remove(graphicPoint);
-//                    map.graphics.add(graphicPoint);
-//                    map.graphics.redraw();
-//
-//                    if(time==0)
-//                    {
-//                        clearInterval(sh);
-//                        return;
-//                    }
-//
-//                }
-//            }
-
             map.on("load", function() {
                 map.graphics.add(graphicPoint);
                 map.graphics.setInfoTemplate(InfoTemplate({title:"站点信息", content:"${*}"}));
                 var x=[121.23,121.24,121.25 ];
                 var y=[31.05,31.06,31.07];
                 if(sh==null){
-                    sh=setInterval(_run(time),40);
+                    sh=setInterval(run,40);
                 }
-                //run(time);
             });
         });
 
