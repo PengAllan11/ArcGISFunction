@@ -3,46 +3,23 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
     <title>test</title>
     <script>
-        var locTime = [
-            [
-                [121.197,31.034],[121.226,31.032],[121.314,31.139],[121.225,31.107],[121.314,31.139],[121.226,31.032],[121.314,31.139]
-            ],
-            [7.0,28.4,11.0,11.0,28.4,28.4]
-        ];
-        /**
-         * s:加快比率
-         * t:播放间隔（ms）
-         */
-        var s = 1000;
-        var t = 30;
-
-        console.log(locTime);
-
-        function calculatePath(locTime,s,t){
-            var locData=[];
-
-            var length = locTime[1].length;
-
-            for(var i = 0; i<length;i++){
-                locData.push(locTime[0][i]);
-
-                var n = locTime[1][i]*60*1000.0/(s*t);
-
-                for(var j = 1;j<n;j++){
-                    var loc = [
-                        locTime[0][i][0]+(locTime[0][i+1][0]-locTime[0][i][0])/n*j,
-                        locTime[0][i][1]+(locTime[0][i+1][1]-locTime[0][i][1])/n*j
-                    ];
-                    locData.push(loc);
-                }
-            }
-
-            locData.push(locTime[0][locTime[1].length]);
-            return locData;
+//        var str = 1;
+//        function a(s)
+//        {
+//            alert(s);
+//            str++;
+//        }
+//
+//        setInterval(function () { a(str); }, 2000);
+        var str = 1;
+        function a()
+        {
+            alert(str);
+            str++;
         }
 
-        var data = calculatePath(locTime,s,t);
-        console.log(data);
+        setInterval(a, 2000);
+
     </script>
 </head>
 <body>

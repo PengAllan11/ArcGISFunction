@@ -17,6 +17,7 @@
             "esri/map",
             "esri/InfoTemplate",
             "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/FeatureLayer",
             "esri/layers/GraphicsLayer",
             "esri/tasks/QueryTask",
             "esri/tasks/query",
@@ -29,10 +30,10 @@
             "esri/Color",
             "esri/graphic",
             "dojo/domReady!"
-        ], function(dom, on, Map,InfoTemplate, ArcGISTiledMapServiceLayer,GraphicsLayer, QueryTask, Query, PictureMarkerSymbol,
+        ], function(dom, on, Map,InfoTemplate, ArcGISTiledMapServiceLayer,FeatureLayer,GraphicsLayer, QueryTask, Query, PictureMarkerSymbol,
                     SimpleMarkerSymbol, InfoTemplate, Multipoint, SpatialReference,Point,Color, Graphic) {
             //create map and add layer
-            map = new Map("map", {
+            var map = new Map("map", {
                 basemap: "streets",
                 center: [121.23, 31.05],
                 zoom: 11,
@@ -41,45 +42,118 @@
                 logo: false
             });
 
+            var Shanghai = new ArcGISTiledMapServiceLayer("http://10.60.38.158:6080/arcgis/rest/services/ChinaProvinceTiles8BigFont/MapServer");
+            map.addLayer(Shanghai);
+
+            var metroPointLayer = new FeatureLayer("http://10.60.38.158:6080/arcgis/rest/services/ShanghaiMetroV1/MapServer/0",{
+                infoTemplate: new InfoTemplate({title:"站点信息", content:"站点名称: ${name}"}),
+                outFields: ["*"]
+            });
+            var metroLineLayer = new FeatureLayer("http://10.60.38.158:6080/arcgis/rest/services/ShanghaiMetroV1/MapServer/1");
+
+            map.addLayer(metroLineLayer);
+            map.addLayer(metroPointLayer);
+
             var pictureMarkerSymbol = new PictureMarkerSymbol('../static/bus.png',30,30);
-
-
             var point = new Point(121.23, 31.05, map.spatialReference);
-            var attr = {"x":121.23,"y":31.05,"name":"temp","picId":"id"};
+            var attr = {"people":1};
             var graphicPoint = new Graphic(point,pictureMarkerSymbol, attr);
 
-            var time=10;
-            var sh = null;
+            var pictureMarkerSymbol1 = new PictureMarkerSymbol({
+                "url":"../static/2.png",
+                "height":20,
+                "width":10,
+                "xoffset": 10,
+                "yoffset": 0
+            });
+            var point1 = new Point(121.226, 31.032, map.spatialReference);
+            var graphicPoint1 = new Graphic(point1,pictureMarkerSymbol1, null);
 
-            function run()
-            {
-                time--;
-                var x = point.x;
-                var y = point.y;
-                x +=0.001;
-                y +=0.001;
-                point.setLatitude(y);
-                point.setLongitude(x);
-                map.graphics.remove(graphicPoint);
-                map.graphics.add(graphicPoint);
-                map.graphics.redraw();
+            var myPoint = {
+                "geometry":{"x":121.197,"y":31.034, "spatialReference":{"wkid":4326}},
+                "attributes":{"XCoord":-104.4140625, "YCoord":69.2578125,"Plant":"Mesa Mint"},
+                "symbol":{
+                    "url":"../static/2.png",
+                    "height":20,
+                    "width":10,
+                    "type":"esriPMS"
+                },
+                "infoTemplate":{"title":"Vernal Pool Locations","content":"LatitudeLongitude:Plant Name"}};
+            var gra = new Graphic(myPoint);
 
-                if(time==0)
-                {
-                    clearInterval(sh);
-                    return;
+            function runABus(loc){
+                /**
+                 * s:加快比率
+                 * t:播放间隔（ms）
+                 */
+                var s = 1000;
+                var t = 30;
+
+                var runLine = null;
+
+                var point1 = loc[0][0];
+                var point2 = loc[0][1];
+                var time = loc[1][0];
+
+
+                var n =time*60*1000.0/(s*t);
+                var i = 1;
+                var j = 1;
+
+                function BusStop(){
+                    if(j<loc[0].length-1){
+                        point1 = loc[0][j];
+                        point2 = loc[0][j+1];
+                        time = loc[1][j];
+                        n =time*60*1000.0/(s*t);
+                        i = 1;
+                        j++;
+
+                        runLine = setInterval(function () { BusRun(point1,point2); },30);
+                    }else {
+                        return;
+                    }
+
                 }
+
+                function BusRun(pot0,pot1){
+                    if(i>n)
+                    {
+                        clearInterval(runLine);
+                        //pictureMarkerSymbol1.setUrl("../static/1.png");
+
+                        map.graphics.remove(graphicPoint1);
+                        graphicPoint1.symbol.setUrl("../static/1.png");
+                        map.graphics.add(graphicPoint1);
+                        setTimeout(BusStop,2000);
+                    }
+                    point.setLongitude(pot0[0]+(pot1[0]-pot0[0])/n*i);
+                    point.setLatitude(pot0[1]+(pot1[1]-pot0[1])/n*i);
+
+                    i++;
+                    map.graphics.remove(graphicPoint);
+                    map.graphics.add(graphicPoint);
+                }
+
+                runLine = setInterval(function () { BusRun(point1,point2); },30);
 
             }
 
+
+            var locTime = [
+                [
+                    [121.197,31.034,0],[121.226,31.032,1],[121.314,31.139],[121.225,31.107],[121.314,31.139],[121.226,31.032],[121.314,31.139]
+                ],
+                [7.0,28.4,11.0,11.0,28.4,28.4]
+            ];
+
             map.on("load", function() {
                 map.graphics.add(graphicPoint);
+                map.graphics.add(graphicPoint1);
+                map.graphics.add(gra);
                 map.graphics.setInfoTemplate(InfoTemplate({title:"站点信息", content:"${*}"}));
-                var x=[121.23,121.24,121.25 ];
-                var y=[31.05,31.06,31.07];
-                if(sh==null){
-                    sh=setInterval(run,40);
-                }
+
+                runABus(locTime);
             });
         });
 
